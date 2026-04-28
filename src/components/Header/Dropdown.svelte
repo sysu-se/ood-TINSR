@@ -5,7 +5,7 @@
 	import { slide, fade } from 'svelte/transition';
 	import { DIFFICULTIES, DROPDOWN_DURATION, DIFFICULTY_CUSTOM } from '@sudoku/constants';
 	import { difficulty } from '@sudoku/stores/difficulty';
-
+	import { gameStore } from '../../store/gameStore.js';
 	let dropdownVisible = false;
 
 	function handleDifficulty(difficultyValue) {
@@ -18,7 +18,7 @@
 			button: 'Continue',
 			onHide: game.resume,
 			callback: () => {
-				game.startNew(difficultyValue);
+				gameStore.startNew(difficultyValue);
 			},
 		});
 	}

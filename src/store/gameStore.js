@@ -1,5 +1,6 @@
 import { writable } from 'svelte/store';
 import { createSudoku, createGame } from '../domain/index.js';
+import { generateSudoku } from '@sudoku/sudoku';
 
 // 保留这个空壳，防止网页刚加载时白屏崩溃
 const emptyGrid = [
@@ -27,18 +28,22 @@ export function createGameStore() {
     // 1. 初始化时，带上 conflicts
     const { subscribe, set } = writable({
         grid: game.getSudoku().getGrid(),
-        conflicts: getConflictsMap(), // 初始化错误地图
+        conflicts: getConflictsMap(),
         canUndo: game.canUndo(),
-        canRedo: game.canRedo()
+        canRedo: game.canRedo(),
+        isExploring: game.getIsExploring() 
     });
 
     //每次有动作时，更新 conflicts
     function notifyUpdate() {
+        const currentSudoku = game.getSudoku();
         set({
-            grid: game.getSudoku().getGrid(),
-            conflicts: getConflictsMap(), // 更新错误地图
+            grid: currentSudoku.getGrid(),
+            conflicts: getConflictsMap(),
             canUndo: game.canUndo(),
-            canRedo: game.canRedo()
+            canRedo: game.canRedo(),
+            isWon: currentSudoku.isSolved(),
+            isExploring: game.getIsExploring() // ✅ 新增这一行
         });
     }
 
@@ -66,6 +71,38 @@ export function createGameStore() {
             game = createGame({ sudoku });
             notifyUpdate();
         },
+
+        startNew(difficulty) {
+            // 1. 直接调用算法生成 9x9 数组
+            const puzzleData = generateSudoku(difficulty);
+            // 2. 直接初始化，不再经过任何旧的 Store
+            this.initNewGame(puzzleData);
+        },
+
+        applyHint() {
+            if (!game) return;
+
+            const success = game.applyHint(); 
+            
+            if (success) {
+                notifyUpdate(); 
+            } else {
+                alert("当前局面无解，需要开启探索模式！");
+            }return success
+        },
+        startExplore() {
+            game.startExplore();
+            notifyUpdate(); // 通知界面刷新
+        },
+        cancelExplore() {
+            game.cancelExplore();
+            notifyUpdate(); // 读档回溯
+        },
+        commitExplore() {
+            game.commitExplore();
+            notifyUpdate(); // 确认分支，回到正常模式
+        }
+
     };
 
 }
