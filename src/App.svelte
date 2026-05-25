@@ -8,9 +8,10 @@
 	import Controls from './components/Controls/index.svelte';
 	import Header from './components/Header/index.svelte';
 	import Modal from './components/Modal/index.svelte';
+	import AIPanel from './components/AIPanel/index.svelte';
 	import { gameStore } from './store/gameStore.js';
 $: if ($gameStore && $gameStore.isWon) {
-		game.pause(); 
+		game.pause();
 		modal.show('gameover');
 	}
 
@@ -29,7 +30,7 @@ $: if ($gameStore && $gameStore.isWon) {
 		modal.show('welcome', { onHide: game.resume, sencode });
 	});
 
-	
+
 </script>
 
 <!-- Timer, Menu, etc. -->
@@ -48,6 +49,9 @@ $: if ($gameStore && $gameStore.isWon) {
 </footer>
 
 <Modal />
+
+<!-- AI Sidebar Panel -->
+<AIPanel />
 
 <style global>
 	@import "./styles/global.css";
